@@ -224,7 +224,9 @@ Copy code
 ## 🚀 How to Run
 ```bash
 pip install pandas numpy matplotlib seaborn
-python main_pipeline.py
+python model.py
+```
+
 🎯 Skills Demonstrated
 Data Engineering & ETL Design
 
