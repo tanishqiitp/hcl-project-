@@ -1,198 +1,250 @@
-# Retail Data Processing Hackathon  
-## Approach & Design Explanation
+# 🛒 Retail Data Engineering & Advanced Analytics Pipeline
+
+## 📌 Project Overview
+This project simulates a **real-world retail data platform** covering the full lifecycle of:
+- Synthetic data generation with **intentional data quality issues**
+- Robust **data validation, cleansing, staging & quarantine**
+- **Promotion effectiveness analysis**
+- **Customer loyalty points calculation**
+- **RFM-based customer segmentation**
+- **Inventory stock-out & lost revenue impact analysis**
+- **Customer notification simulation**
+
+The solution mirrors **enterprise-grade ETL and analytics pipelines** commonly used in large retail organizations.
 
 ---
 
-## Overview
-
-This project is designed as an **end-to-end retail data processing system**, covering the full lifecycle from **raw data ingestion** to **customer engagement and business insights**.
-
-Each use case builds on the previous one, ensuring **data quality, analytical accuracy, and business value**.
-
----
-
-## Use Case 1: Automated Data Ingestion & Quality Validation Pipeline
-
-### Goal
-Ensure that high-volume retail data is ingested reliably and validated for quality before it is used for analytics or business decisions.
-
-### Approach
-
-#### Data Ingestion
-- Ingest raw CSV files for:
-  - Stores
-  - Products
-  - Customers
-  - Sales headers
-  - Sales line items
-- Load data into a **raw layer** without modification to preserve original data.
-
-#### Schema & Referential Validation
-- Verify mandatory fields (e.g., `product_id`, `store_id`, `transaction_id`).
-- Ensure foreign key relationships exist (e.g., product_id in sales must exist in products).
-
-#### Business Rule Validation
-Check for invalid values such as:
-- Negative prices, quantities, or sales amounts
-- Invalid dates (future dates or malformed values)
-- Header totals not matching line-item totals
-- Invalid regions, categories, or promotion dates
-
-#### Data Segregation
-- **Valid records** → Move to a staging/clean layer
-- **Invalid records** → Move to a quarantine table with rejection reasons
-
-### Outcome
-- Only clean, trusted data is allowed to flow downstream.
-- Bad data is preserved separately for auditing and reporting.
+## 🧱 Data Domains
+| Domain | Description |
+|------|------------|
+| Stores | Retail store master data |
+| Products | Product catalog and pricing |
+| Customers | Customer profiles and loyalty |
+| Loyalty Rules | Reward calculation rules |
+| Promotions | Time-bound discount campaigns |
+| Sales Header | Transaction-level sales |
+| Sales Line Items | Product-level sales |
+| Inventory (Simulated) | Daily store-product stock |
 
 ---
 
-## Use Case 2: Real-Time Promotion Effectiveness Analyzer
-
-### Goal
-Identify which promotions actually drive sales and revenue growth.
-
-### Approach
-
-#### Data Joining
-- Join clean sales line items with promotion details and product information.
-
-#### Baseline vs Promoted Comparison
-Compare sales volume and revenue:
-- When a product is sold under a promotion
-- Versus when it is sold without a promotion
-
-#### Effectiveness Metrics
-Calculate:
-- Sales uplift percentage
-- Revenue growth per promotion
-- Performance by product category
-
-#### Ranking & Reporting
-- Rank promotions by effectiveness.
-- Highlight **Top 3 promotions** that drive the highest sales uplift.
-
-### Outcome
-- Business teams can stop ineffective promotions.
-- Increased investment in high-impact promotions.
+## 🛠️ Tech Stack
+- **Python 3**
+- **Pandas**
+- **NumPy**
+- **Matplotlib**
+- **Seaborn**
+- **Datetime**
 
 ---
 
-## Use Case 3: Loyalty Point Calculation Engine
+## 📂 CASE 1: DATA GENERATION WITH CONTROLLED ERRORS
 
-### Goal
-Accurately calculate and accrue loyalty points for customers after each transaction.
+### 🎯 Objective
+Generate realistic retail datasets and intentionally inject **data quality issues** to validate downstream cleansing logic.
 
-### Approach
+### 🔹 Errors Injected
+- Duplicate primary keys
+- Invalid foreign keys
+- Missing or negative numeric values
+- Invalid categorical values
+- Invalid or inconsistent dates
 
-#### Transaction Identification
-- Identify completed sales transactions from clean sales header data.
+### 📄 Raw Output Files
+stores.csv
+products.csv
+customers.csv
+loyalty_rules.csv
+promotions.csv
+sales_header.csv
+sales_line_items.csv
 
-#### Customer & Rule Mapping
-- Join transactions with customer details.
-- Apply relevant loyalty rules based on spend amount, date, or special conditions.
-
-#### Points Calculation
-- Calculate base points (e.g., points per currency unit spent).
-- Apply bonus points for qualifying transactions (high spend, weekends, etc.).
-
-#### Balance Update
-- Add newly earned points to the customer’s total loyalty balance.
-
-### Outcome
-- Loyalty points are calculated consistently and transparently.
-- Customers are rewarded accurately, improving trust and retention.
-
----
-
-## Use Case 4: Customer Segmentation for Targeted Offers
-
-### Goal
-Identify high-value and at-risk customers for personalized marketing.
-
-### Approach
-
-#### Sales Aggregation
-- Aggregate customer sales history from clean sales data.
-
-#### RFM Analysis
-Calculate:
-- **Recency**: How recently the customer purchased
-- **Frequency**: How often the customer purchases
-- **Monetary**: How much the customer spends
-
-#### Loyalty Signal Integration
-- Include current loyalty point balance as an additional indicator of engagement.
-
-#### Segment Creation
-- **High-Spenders**: Top customers by monetary value
-- **At-Risk Customers**: No recent purchases but still holding loyalty points
-
-### Outcome
-- Enables targeted marketing campaigns.
-- Higher conversion rates and reduced churn.
+markdown
+Copy code
 
 ---
 
-## Use Case 5: Automated Loyalty Notification System
+## 🧹 CASE 2: DATA QUALITY VALIDATION & STAGING
 
-### Goal
-Close the loyalty loop by informing customers about earned rewards.
+### 🎯 Objective
+Implement a **data quality framework** that separates valid and invalid records.
 
-### Approach
+### 🔹 Validation Framework
+Each dataset follows a standard approach:
+1. Create an `error_reason` column
+2. Apply domain-specific validation rules
+3. Split data into:
+   - **Staging tables** → clean & analytics-ready
+   - **Quarantine tables** → invalid records with reasons
 
-#### Trigger Identification
-- Detect customers whose loyalty points were updated in the latest run.
+### 🔹 Example Validation Rules
+- Stores → invalid regions, future opening dates
+- Products → invalid categories, negative stock
+- Customers → duplicate emails, negative loyalty points
+- Promotions → invalid date ranges, negative discounts
+- Sales → broken customer/store references
 
-#### Customer Communication Mapping
-- Retrieve customer email and loyalty details.
+### 📄 Outputs
+staging_<table>.csv
+quarantine_<table>.csv
 
-#### Personalized Messageity Message Creation
-- Generate dynamic messages including:
-  - Points earned in the transaction
-  - Total loyalty balance
-  - Encouragement to shop again
+markdown
+Copy code
 
-#### Notification Simulation
-- Simulate email delivery (or integrate with real email services in production systems).
+<img width="784" height="484" alt="image" src="https://github.com/user-attachments/assets/9c95b711-894d-48b0-ae62-450756dfccca" />
 
-### Outcome
-- Customers feel acknowledged and rewarded.
-- Increased engagement and repeat purchases.
-
----
-
-## Use Case 6: Inventory & Store Performance Correlation
-
-### Goal
-Understand how inventory availability affects sales performance.
-
-### Approach
-
-#### Inventory & Sales Integration
-- Join sales data with daily inventory levels by store and product.
-
-#### Top Product Identification
-- Identify the top-selling products across all stores.
-
-#### Out-of-Stock Analysis
-- Calculate how often these products were unavailable.
-- Measure lost sales opportunities due to stock-outs.
-
-#### Business Insight Generation
-- Estimate potential revenue lost because of inventory shortages.
-
-### Outcome
-- Data-driven inventory planning.
-- Reduced stock-outs and improved store performance.
 
 ---
 
-## Overall Design Philosophy
+## 📊 CASE 3: PROMOTION EFFECTIVENESS ANALYSIS
 
-- **Layered Data Architecture** (Raw → Clean → Analytics)
-- **Strong Data Quality Gates**
-- **Business-Driven Metrics**
-- **Customer-Centric Insights**
-- **Scalable and Reusable Design**
+### 🎯 Objective
+Measure **sales and revenue lift** generated by promotions compared to baseline sales.
+
+### 🔹 Promotion Identification Logic
+A transaction is considered **promotional** if:
+- `promotion_id` exists
+- Transaction date falls within promotion start & end dates
+
+### 🔹 Metrics Calculated
+- Promotional units and revenue
+- Baseline units and revenue
+- **Sales Lift (%)**
+- **Revenue Lift (%)**
+
+### 📈 Visualization
+- Bar chart showing **Top 3 most effective promotions** by sales lift
+
+This helps marketing teams evaluate **campaign ROI**.
+
+---
+
+## ⭐ CASE 4: CUSTOMER SEGMENTATION (RFM MODEL)
+
+### 🎯 Objective
+Segment customers using **Recency, Frequency, Monetary (RFM)** analysis.
+
+### 🔹 RFM Metrics
+- **Recency** → Days since last purchase
+- **Frequency** → Number of transactions
+- **Monetary** → Total spend
+
+### 🔹 Segments Created
+1. **High-Spenders**
+   - Top 10% customers by monetary value
+2. **At-Risk Customers**
+   - No purchase in 60+ days but holding loyalty points
+
+### 📄 Output
+customer_segmentation_case_4.csv
+
+yaml
+Copy code
+
+<img width="696" height="479" alt="image" src="https://github.com/user-attachments/assets/610f102c-f3e6-490f-a6d3-0b2b756aa3b1" />
+<img width="696" height="479" alt="image" src="https://github.com/user-attachments/assets/f696d19d-f89b-4129-ac2d-3604cb9a252b" />
+<img width="724" height="556" alt="image" src="https://github.com/user-attachments/assets/fddff5b1-10a5-4935-88fb-565c054f9a06" />
+
+
+---
+
+## 🎯 CASE 5: LOYALTY POINTS ENGINE & CUSTOMER NOTIFICATIONS
+
+### 🎯 Objective
+Calculate loyalty points dynamically and simulate customer notifications.
+
+### 🔹 Points Calculation Logic
+- Tiered spend multipliers
+- Loyalty status multipliers
+- Customer tenure bonus
+
+### 🔹 Outputs
+- Updated customer loyalty balances
+- Transaction-level earned points
+====================================
+Sending email to: cust1@mail.com
+
+    Hi Cust_1,
+
+    🎉 Great news! You've just earned 17247 loyalty points.
+
+    ⭐ Your total loyalty balance is now: 4971 points.
+
+    Thank you for shopping with us.
+    Keep earning rewards with every purchase!
+
+    — Your Loyalty Team
+    
+Email sent successfully ✅
+====================================
+
+### 🔔 Notification Simulation
+Customers who earn points receive **personalized reward emails**, printed to console to simulate email delivery.
+
+---
+
+## 📦 CASE 6: INVENTORY STOCK-OUT & LOST SALES ANALYSIS
+
+### 🎯 Objective
+Estimate **lost revenue due to inventory stock-outs**.
+
+### 🔹 Key Steps
+1. Identify **Top 5 best-selling products**
+2. Simulate daily inventory per store-product
+3. Calculate:
+   - Out-of-stock days
+   - Out-of-stock percentage
+4. Estimate lost revenue using:
+out_of_stock_days × avg_daily_sales × unit_price
+
+shell
+Copy code
+
+### 📄 Output
+inventory_sales_impact_case_6.csv
+
+yaml
+Copy code
+
+<img width="623" height="463" alt="image" src="https://github.com/user-attachments/assets/870db613-a3ae-4909-b4e6-85bd0881dec8" />
+<img width="623" height="464" alt="image" src="https://github.com/user-attachments/assets/ce643419-0617-4d04-9d2c-4d6c5beb2b03" />
+
+---
+
+## 📤 Final Deliverables
+- Clean & quarantined datasets
+- Promotion effectiveness KPIs
+- Customer segmentation outputs
+- Updated loyalty balances
+- Inventory loss impact analysis
+- Business-ready insights
+
+---
+
+## 🚀 How to Run
+```bash
+pip install pandas numpy matplotlib seaborn
+python main_pipeline.py
+🎯 Skills Demonstrated
+Data Engineering & ETL Design
+
+Data Quality Frameworks
+
+Retail Analytics & KPIs
+
+Promotion ROI Analysis
+
+RFM Customer Segmentation
+
+Inventory Optimization Analytics
+
+Business Insights & Reporting
+
+📌 Ideal Use Cases
+Hackathons
+
+Data Analyst / Data Engineer interviews
+
+Retail analytics case studies
+
+Portfolio projects
