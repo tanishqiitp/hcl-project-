@@ -18,7 +18,7 @@ def load_data():
 
 header, lines, stores, products, customers, promotions, loyalty_rules, inventory = load_data()
 
-st.title('Retail Data Processing — Hackathon Boilerplate')
+st.title('Retail Data Processing — Hackathon')
 tab = st.tabs(['Data Overview','Promotion Effectiveness','Loyalty','Segmentation','Notifications','Inventory'])
 
 with tab[0]:
