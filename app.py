@@ -39,6 +39,22 @@ with tab[0]:
     st.dataframe(promotions.head())
     st.write('Products sample')
     st.dataframe(products.head())
+    # Charts: Histogram of transaction amounts
+    try:
+        st.subheader('Sales Amount Distribution')
+        fig_hist = px.histogram(header, x='total_amount', nbins=50, title='Transaction Amount Distribution')
+        st.plotly_chart(fig_hist, width='stretch')
+    except Exception:
+        pass
+    # Chart: Product category distribution (pie)
+    try:
+        st.subheader('Product Category Distribution')
+        cat_counts = products['product_category'].value_counts().reset_index()
+        cat_counts.columns = ['product_category','count']
+        fig_pie = px.pie(cat_counts, names='product_category', values='count', title='Product Categories')
+        st.plotly_chart(fig_pie, width='stretch')
+    except Exception:
+        pass
 
 with tab[1]:
     st.header('Promotion Performance Analysis (Pre/During/Post)')
@@ -49,6 +65,20 @@ with tab[1]:
         metric = st.radio('Metric', ['units','revenue'], horizontal=True, key='promo_metric')
         promo_perf2 = ra.promotion_analysis(header, lines, promotions, metric=metric)
         st.dataframe(promo_perf2.head(20))
+        # Promotion charts (if aggregated output exists)
+        try:
+            if not promo_perf2.empty:
+                if 'period' in promo_perf2.columns:
+                    agg = promo_perf2.groupby('period').agg(units_sold=('units_sold','sum') if 'units_sold' in promo_perf2.columns else ('revenue','sum')).reset_index()
+                    if 'units_sold' in promo_perf2.columns:
+                        fig_line = px.line(agg, x='period', y='units_sold', title='Units Sold by Period')
+                        st.plotly_chart(fig_line, width='stretch')
+                    if 'revenue' in promo_perf2.columns:
+                        agg_rev = promo_perf2.groupby('period').agg(revenue=('revenue','sum')).reset_index()
+                        fig_bar = px.bar(agg_rev, x='period', y='revenue', title='Revenue by Period')
+                        st.plotly_chart(fig_bar, width='stretch')
+        except Exception:
+            pass
     except Exception as e:
         st.error(f"Error in promotion analysis: {e}")
 
@@ -79,6 +109,12 @@ with tab[4]:
         seg_counts.columns = ['segment','count']
         fig = px.bar(seg_counts, x='segment', y='count', labels={'segment':'segment','count':'count'})
         st.plotly_chart(fig, width='stretch')
+        # Donut chart for segment distribution
+        try:
+            fig_donut = px.pie(seg_counts, names='segment', values='count', hole=0.4, title='Segment Distribution')
+            st.plotly_chart(fig_donut, width='stretch')
+        except Exception:
+            pass
     except Exception as e:
         st.error(f"Error in RFM segmentation: {e}")
 
@@ -110,6 +146,22 @@ with tab[7]:
     try:
         inv = ra.inventory_risk_analysis(header, lines, inventory, stores)
         st.dataframe(inv.head(30))
+        # Inventory charts: risk distribution and avg days by region
+        try:
+            if not inv.empty and 'risk' in inv.columns:
+                risk_counts = inv['risk'].value_counts().reset_index()
+                risk_counts.columns = ['risk','count']
+                fig_inv = px.pie(risk_counts, names='risk', values='count', hole=0.4, title='Inventory Risk Distribution')
+                st.plotly_chart(fig_inv, width='stretch')
+        except Exception:
+            pass
+        try:
+            if not inv.empty and 'store_region' in inv.columns and 'days_of_inventory_left' in inv.columns:
+                region_avg = inv.groupby('store_region', as_index=False)['days_of_inventory_left'].mean()
+                fig_region = px.bar(region_avg, x='store_region', y='days_of_inventory_left', title='Avg Days of Inventory by Region')
+                st.plotly_chart(fig_region, width='stretch')
+        except Exception:
+            pass
     except Exception as e:
         st.error(f"Error in inventory risk analysis: {e}")
 
